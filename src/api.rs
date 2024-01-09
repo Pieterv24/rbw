@@ -365,6 +365,8 @@ struct SyncResCipher {
     fields: Option<Vec<SyncResField>>,
     #[serde(rename = "DeletedDate", alias = "deletedDate")]
     deleted_date: Option<String>,
+    #[serde(rename = "Attachments", alias = "attachments")]
+    attachments: Option<Vec<CipherAttachment>>,
 }
 
 impl SyncResCipher {
@@ -468,6 +470,17 @@ impl SyncResCipher {
                 })
                 .collect()
         });
+        let attachments = self.attachments.as_ref().map_or_else(Vec::new, |attachments| {
+            attachments
+                .iter()
+                .map(|attachment| crate::db::AttachmentEntry {
+                    file_name: attachment.file_name.clone(),
+                    id: attachment.id.clone(),
+                    size: attachment.size.clone(),
+                    size_name: attachment.size_name.clone(),
+                })
+                .collect()
+        });
         Some(crate::db::Entry {
             id: self.id.clone(),
             org_id: self.organization_id.clone(),
@@ -478,6 +491,7 @@ impl SyncResCipher {
             fields,
             notes: self.notes.clone(),
             history,
+            attachments,
         })
     }
 }
@@ -582,6 +596,18 @@ struct CipherIdentity {
     username: Option<String>,
 }
 
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+struct CipherAttachment {
+    #[serde(rename = "FileName", alias = "filename")]
+    file_name: Option<String>,
+    #[serde(rename = "Id", alias = "id")]
+    id: Option<String>,
+    #[serde(rename = "Size", alias = "size")]
+    size: Option<String>,
+    #[serde(rename = "SizeName", alias = "sizename")]
+    size_name: Option<String>,
+}
+
 // this is just a name and some notes, both of which are already on the cipher
 // object
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
@@ -670,6 +696,24 @@ struct FoldersResData {
 #[derive(serde::Serialize, Debug)]
 struct FoldersPostReq {
     name: String,
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+pub struct AttachmentRes {
+    #[serde(rename = "FileName", alias = "filename")]
+    pub file_name: Option<String>,
+    #[serde(rename = "Id", alias = "id")]
+    pub id: Option<String>,
+    #[serde(rename = "Key", alias = "key")]
+    pub key: Option<String>,
+    #[serde(rename = "Object", alias = "object")]
+    pub object: Option<String>,
+    #[serde(rename = "Size", alias = "size")]
+    pub size: Option<String>,
+    #[serde(rename = "SizeName", alias = "sizename")]
+    pub size_name: Option<String>,
+    #[serde(rename = "Url", alias = "url")]
+    pub url: Option<String>,
 }
 
 #[derive(Debug)]
@@ -1236,6 +1280,32 @@ impl Client {
             reqwest::StatusCode::OK => {
                 let folders_res: FoldersResData = res.json_with_path()?;
                 Ok(folders_res.id)
+            }
+            reqwest::StatusCode::UNAUTHORIZED => {
+                Err(Error::RequestUnauthorized)
+            }
+            _ => Err(Error::RequestFailed {
+                status: res.status().as_u16(),
+            }),
+        }
+    }
+
+    pub fn get_attachment(
+        &self,
+        access_token: &str,
+        item_id: &str,
+        attachment_id: &str
+    ) -> Result<AttachmentRes> {
+        let client = reqwest::blocking::Client::new();
+        let res = client
+            .get(self.api_url(&format!("/ciphers/{}/attachment/{}", item_id, attachment_id)))
+            .header("Authorization", format!("Bearer {access_token}"))
+            .send()
+            .map_err(|source| Error::Reqwest { source })?;
+        match res.status() {
+            reqwest::StatusCode::OK => {
+                let attachment: AttachmentRes = res.json_with_path()?;
+                Ok(attachment)
             }
             reqwest::StatusCode::UNAUTHORIZED => {
                 Err(Error::RequestUnauthorized)

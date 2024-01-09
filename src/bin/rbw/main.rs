@@ -15,7 +15,7 @@
 
 use anyhow::Context as _;
 use clap::{CommandFactory as _, Parser as _};
-use std::io::Write as _;
+use std::{io::Write as _, path::PathBuf};
 
 mod actions;
 mod commands;
@@ -61,7 +61,7 @@ enum Opt {
         #[arg(
             long,
             help = "Fields to display. \
-                Available options are id, name, user, folder. \
+                Available options are id, name, user, folder, attachments. \
                 Multiple fields will be separated by tabs.",
             default_value = "name",
             use_value_delimiter = true
@@ -85,6 +85,12 @@ enum Opt {
         raw: bool,
         #[structopt(long, help = "Copy result to clipboard")]
         clipboard: bool,
+    },
+
+    #[command(about = "Manage attachments")]
+    Attachment {
+        #[command(subcommand)]
+        attachment: Attachment,
     },
 
     #[command(about = "Display the authenticator code for a given entry")]
@@ -244,6 +250,9 @@ impl Opt {
             Self::Sync => "sync".to_string(),
             Self::List { .. } => "list".to_string(),
             Self::Get { .. } => "get".to_string(),
+            Self::Attachment { attachment } => {
+                format!("attachment {}", attachment.subcommand_name())
+            }
             Self::Code { .. } => "code".to_string(),
             Self::Add { .. } => "add".to_string(),
             Self::Generate { .. } => "generate".to_string(),
@@ -282,6 +291,41 @@ impl Config {
             Self::Show => "show",
             Self::Set { .. } => "set",
             Self::Unset { .. } => "unset",
+        }
+        .to_string()
+    }
+}
+
+#[derive(Debug, clap::Parser)]
+enum Attachment {
+    #[command(about = "Get list all attachments in the database or entry")]
+    List {
+        #[arg(long="item", short='i', help = "Name or UUID of the entry to return")]
+        name: Option<String>,
+    },
+    #[command(about = "Get an attachment")]
+    Get {
+        #[arg(help = "Name or UUID of the entry to return")]
+        name: String,
+        #[arg(help = "Name or UUID of the attachment to return")]
+        attachment_id: String,
+
+        #[arg(help = "Output path for file")]
+        output: PathBuf,
+    },
+    #[command(about = "Create an attachment")]
+    Create,
+    #[command(about = "Delete an attachment")]
+    Delete,
+}
+
+impl Attachment {
+    fn subcommand_name(&self) -> String {
+        match self {
+            Self::List { .. } => "list",
+            Self::Get { .. } => "get",
+            Self::Create { .. } => "create",
+            Self::Delete { .. } => "delete",
         }
         .to_string()
     }
@@ -334,6 +378,12 @@ fn main() {
             *raw,
             *clipboard,
         ),
+        Opt::Attachment { attachment } => match attachment {
+            Attachment::List { .. } => todo!(),
+            Attachment::Get { .. } => todo!(),
+            Attachment::Create { .. } => todo!(),
+            Attachment::Delete { .. } => todo!(),
+        },
         Opt::Code { name, user, folder } => {
             commands::code(name, user.as_deref(), folder.as_deref())
         }

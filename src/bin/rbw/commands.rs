@@ -23,6 +23,7 @@ struct DecryptedCipher {
     fields: Vec<DecryptedField>,
     notes: Option<String>,
     history: Vec<DecryptedHistoryEntry>,
+    attachments: Vec<DecryptedAttachment>,
 }
 
 impl DecryptedCipher {
@@ -645,6 +646,18 @@ struct DecryptedHistoryEntry {
 
 #[derive(Debug, Clone, Serialize)]
 #[cfg_attr(test, derive(Eq, PartialEq))]
+struct DecryptedAttachment {
+    file_name: Option<String>,
+    id: Option<String>,
+    // key: Option<String>,
+    // object: Option<String>,
+    size: Option<String>,
+    size_name: Option<String>,
+    // url: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[cfg_attr(test, derive(Eq, PartialEq))]
 struct DecryptedUri {
     uri: String,
     match_type: Option<rbw::api::UriMatchType>,
@@ -655,6 +668,7 @@ enum ListField {
     Id,
     User,
     Folder,
+    Attachments,
 }
 
 impl std::convert::TryFrom<&String> for ListField {
@@ -666,6 +680,7 @@ impl std::convert::TryFrom<&String> for ListField {
             "id" => Self::Id,
             "user" => Self::User,
             "folder" => Self::Folder,
+            "attachments" => Self::Attachments,
             _ => return Err(anyhow::anyhow!("unknown field {}", s)),
         })
     }
@@ -842,6 +857,18 @@ pub fn list(fields: &[String]) -> anyhow::Result<()> {
                     String::new,
                     std::string::ToString::to_string,
                 ),
+                ListField::Attachments => {
+                    cipher
+                    .attachments
+                    .iter()
+                    .map(|attachment| {
+                        format!("{} ({})", 
+                            attachment.file_name.as_ref().map_or_else(String::new, std::string::ToString::to_string), 
+                            attachment.size_name.as_ref().map_or_else(String::new, std::string::ToString::to_string),
+                        )
+                    })
+                    .collect()
+                },
             })
             .collect();
 
@@ -1558,6 +1585,24 @@ fn decrypt_cipher(entry: &rbw::db::Entry) -> anyhow::Result<DecryptedCipher> {
         })
         .collect::<anyhow::Result<_>>()?;
 
+    let attachments = entry
+        .attachments
+        .iter()
+        .map(|attachment_entry| {
+            Ok(DecryptedAttachment {
+                id: attachment_entry.id.clone(),
+                size: attachment_entry.size.clone(),
+                size_name: attachment_entry.size_name.clone(),
+                file_name: attachment_entry.file_name
+                    .as_ref()
+                    .map(|file_name| {
+                        crate::actions::decrypt(file_name, entry.org_id.as_deref())
+                    })
+                    .transpose()?, 
+            })
+        })
+        .collect::<anyhow::Result<_>>()?;
+
     let data = match &entry.data {
         rbw::db::EntryData::Login {
             username,
@@ -1750,6 +1795,7 @@ fn decrypt_cipher(entry: &rbw::db::Entry) -> anyhow::Result<DecryptedCipher> {
         fields,
         notes,
         history,
+        attachments,
     })
 }
 

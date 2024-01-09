@@ -272,6 +272,17 @@ fn create_folder_once(access_token: &str, name: &str) -> Result<String> {
     client.create_folder(access_token, name)
 }
 
+// fn get_attachment(access_token: &str, refresh_token: &str, item_id: &str, attachment_id: &str) -> Result<(Option<String>, crate::api::AttachmentRes)>{
+//     with_exchange_refresh_token(access_token, refresh_token, |access_token| {
+//         get_attachment_once(access_token, item_id, attachment_id)
+//     })
+// }
+
+// fn get_attachment_once(access_token: &str, item_id: &str, attachment_id: &str) -> Result<crate::api::AttachmentRes> {
+//     let (client, _) = api_client()?;
+//     client.get_attachment(access_token, item_id, attachment_id)
+// }
+
 fn with_exchange_refresh_token<F, T>(
     access_token: &str,
     refresh_token: &str,

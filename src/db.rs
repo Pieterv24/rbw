@@ -16,6 +16,7 @@ pub struct Entry {
     pub fields: Vec<Field>,
     pub notes: Option<String>,
     pub history: Vec<HistoryEntry>,
+    pub attachments: Vec<AttachmentEntry>,
 }
 
 #[derive(serde::Serialize, Debug, Clone, Eq, PartialEq)]
@@ -157,6 +158,16 @@ pub struct Field {
 pub struct HistoryEntry {
     pub last_used_date: String,
     pub password: String,
+}
+
+#[derive(
+    serde::Serialize, serde::Deserialize, Debug, Clone, Eq, PartialEq,
+)]
+pub struct AttachmentEntry {
+    pub file_name: Option<String>,
+    pub id: Option<String>,
+    pub size: Option<String>,
+    pub size_name: Option<String>,
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Default, Debug)]
