@@ -917,6 +917,28 @@ pub fn get(
     Ok(())
 }
 
+pub fn attachment_list(
+    name: Option<&str>,
+    folder: Option<&str>,
+) -> anyhow::Result<()> {
+    unlock()?;
+
+    let db = load_db()?;
+
+    Ok(())
+}
+
+pub fn attachment_get(
+    name: &str,
+    attachment: &str, 
+    output_file: &str,
+    folder: Option<&str>
+) -> anyhow::Result<()> {
+    unlock()?;
+
+    Ok(())
+}
+
 pub fn code(
     name: &str,
     user: Option<&str>,

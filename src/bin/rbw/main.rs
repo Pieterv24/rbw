@@ -300,18 +300,23 @@ impl Config {
 enum Attachment {
     #[command(about = "Get list all attachments in the database or entry")]
     List {
-        #[arg(long="item", short='i', help = "Name or UUID of the entry to return")]
+        #[arg(help = "Name or UUID of the entry to return")]
         name: Option<String>,
+
+        #[arg(long, help = "Folder name to search in")]
+        folder: Option<String>,
     },
     #[command(about = "Get an attachment")]
     Get {
         #[arg(help = "Name or UUID of the entry to return")]
         name: String,
-        #[arg(help = "Name or UUID of the attachment to return")]
-        attachment_id: String,
+        #[arg(help = "ID of the attachment to return")]
+        attachment: String,
+        #[arg(id = "FILE", help = "Output path for file")]
+        output_file: String,
 
-        #[arg(help = "Output path for file")]
-        output: PathBuf,
+        #[arg(long, help = "Folder name to search in")]
+        folder: Option<String>,
     },
     #[command(about = "Create an attachment")]
     Create,
@@ -379,8 +384,18 @@ fn main() {
             *clipboard,
         ),
         Opt::Attachment { attachment } => match attachment {
-            Attachment::List { .. } => todo!(),
-            Attachment::Get { .. } => todo!(),
+            Attachment::List {name, folder } => commands::attachment_list(name.as_deref(), folder.as_deref()),
+            Attachment::Get { 
+                name, 
+                attachment,
+                output_file, 
+                folder,
+            } => commands::attachment_get(
+                name,
+                attachment,
+                output_file,
+                folder.as_deref(),
+            ),
             Attachment::Create { .. } => todo!(),
             Attachment::Delete { .. } => todo!(),
         },
