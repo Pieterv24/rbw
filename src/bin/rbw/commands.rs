@@ -883,6 +883,23 @@ pub fn list(fields: &[String]) -> anyhow::Result<()> {
     Ok(())
 }
 
+pub fn attachment_list(
+    name: Option<&str>,
+    folder: Option<&str>,
+) -> anyhow::Result<()> {
+    unlock()?;
+
+    let db = load_db()?;
+    let mut ciphers: Vec<DecryptedCipher> = db
+        .entries
+        .iter()
+        .filter(|cipher| cipher.attachments.len() > 0)
+        .map(decrypt_cipher)
+        .collect::<anyhow::Result<_>>()?;
+    
+    Ok(())
+}
+
 pub fn get(
     name: &str,
     user: Option<&str>,
@@ -913,17 +930,6 @@ pub fn get(
     } else {
         decrypted.display_short(&desc, clipboard);
     }
-
-    Ok(())
-}
-
-pub fn attachment_list(
-    name: Option<&str>,
-    folder: Option<&str>,
-) -> anyhow::Result<()> {
-    unlock()?;
-
-    let db = load_db()?;
 
     Ok(())
 }
@@ -2069,6 +2075,7 @@ mod test {
                 fields: vec![],
                 notes: None,
                 history: vec![],
+                attachments: vec![],
             },
             DecryptedCipher {
                 id: "irrelevant".to_string(),
@@ -2083,6 +2090,7 @@ mod test {
                 fields: vec![],
                 notes: None,
                 history: vec![],
+                attachments: vec![],
             },
         )
     }

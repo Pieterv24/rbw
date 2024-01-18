@@ -298,7 +298,7 @@ impl Config {
 
 #[derive(Debug, clap::Parser)]
 enum Attachment {
-    #[command(about = "Get list all attachments in the database or entry")]
+    #[command(about = "Get list all attachments in database, or filter by entry")]
     List {
         #[arg(help = "Name or UUID of the entry to return")]
         name: Option<String>,

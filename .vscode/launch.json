@@ -1,0 +1,119 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'rbw'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=rbw"
+                ],
+                "filter": {
+                    "name": "rbw",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'rbw-agent'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=rbw-agent",
+                    "--package=rbw"
+                ],
+                "filter": {
+                    "name": "rbw-agent",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'rbw-agent'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=rbw-agent",
+                    "--package=rbw"
+                ],
+                "filter": {
+                    "name": "rbw-agent",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'rbw'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=rbw",
+                    "--package=rbw"
+                ],
+                "filter": {
+                    "name": "rbw",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'rbw' 'attachment' 'list'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=rbw",
+                    "--package=rbw"
+                ],
+                "filter": {
+                    "name": "rbw",
+                    "kind": "bin"
+                }
+            },
+            "args": ["attachment", "list"],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'rbw'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=rbw",
+                    "--package=rbw"
+                ],
+                "filter": {
+                    "name": "rbw",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
